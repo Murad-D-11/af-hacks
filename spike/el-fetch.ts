@@ -163,8 +163,51 @@ function getDataCollectionValue(c: Conversation, id: string): { found: boolean; 
   return { found: false, value: undefined };
 }
 
-/** Values arrive as strings; the LLM sometimes wraps them in ```json fences. */
-function parseJsonValue(value: unknown): { ok: true; data: Json } | { ok: false; error: string } {
+/**
+ * Attempts to repair common LLM JSON-generation mistakes seen in practice:
+ *  - a stray extra closing brace right before the final closer, e.g. `..."}]}"` where
+ *    it should just be `..."]}"` (the model double-closed the last string's container).
+ *  - missing closing brackets/braces at the very end (truncated output).
+ * This is a best-effort salvage, not a general JSON repair tool: it only tries a small,
+ * targeted set of fixes and gives up if none of them parse.
+ */
+function tryRepairJson(text: string): string[] {
+  const candidates: string[] = [];
+
+  // Fix 1: a single stray `}` immediately before the last `]` and/or `}` in the string.
+  // e.g. `..."foo"}]}` -> `..."foo"]}` (drop the extra `}` that closes nothing).
+  const strayBraceBeforeClose = text.replace(/\}(\]\}?)$/, "$1");
+  if (strayBraceBeforeClose !== text) candidates.push(strayBraceBeforeClose);
+
+  // Fix 2: count bracket/brace balance and append whatever closers are missing at the end
+  // (handles truncated output that just stops mid-structure).
+  let depthBrace = 0;
+  let depthBracket = 0;
+  let inString = false;
+  let escaped = false;
+  for (const ch of text) {
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (ch === "\\") escaped = true;
+      else if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') inString = true;
+    else if (ch === "{") depthBrace += 1;
+    else if (ch === "}") depthBrace -= 1;
+    else if (ch === "[") depthBracket += 1;
+    else if (ch === "]") depthBracket -= 1;
+  }
+  if (depthBrace > 0 || depthBracket > 0) {
+    const closers = "]".repeat(Math.max(0, depthBracket)) + "}".repeat(Math.max(0, depthBrace));
+    candidates.push(text + closers);
+  }
+
+  return candidates;
+}
+
+/** Values arrive as strings; the LLM sometimes wraps them in ```json fences or emits slightly malformed JSON. */
+function parseJsonValue(value: unknown): { ok: true; data: Json; repaired?: boolean } | { ok: false; error: string } {
   if (value === null || value === undefined || value === "") return { ok: false, error: "empty value" };
   if (typeof value !== "string") return { ok: true, data: value as Json };
   const cleaned = value
@@ -174,7 +217,15 @@ function parseJsonValue(value: unknown): { ok: true; data: Json } | { ok: false;
     .trim();
   try {
     return { ok: true, data: JSON.parse(cleaned) as Json };
-  } catch (err) {
+  } catch (firstErr) {
+    for (const candidate of tryRepairJson(cleaned)) {
+      try {
+        return { ok: true, data: JSON.parse(candidate) as Json, repaired: true };
+      } catch {
+        // try the next candidate
+      }
+    }
+    const err = firstErr;
     return { ok: false, error: err instanceof Error ? err.message : String(err) };
   }
 }
@@ -272,8 +323,9 @@ async function main(): Promise<void> {
     }
     const parsed = parseJsonValue(value);
     if (parsed.ok) {
-      results[field] = `ok (${Array.isArray(parsed.data) ? `array[${parsed.data.length}]` : typeof parsed.data})`;
-      console.log(`\n--- ${field}: parsed`);
+      const shape = Array.isArray(parsed.data) ? `array[${parsed.data.length}]` : typeof parsed.data;
+      results[field] = parsed.repaired ? `ok, REPAIRED (${shape})` : `ok (${shape})`;
+      console.log(`\n--- ${field}: parsed${parsed.repaired ? " (after repairing malformed JSON from the model)" : ""}`);
       console.log(JSON.stringify(parsed.data, null, 2));
     } else {
       results[field] = `INVALID JSON: ${parsed.error}`;
