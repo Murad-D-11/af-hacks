@@ -46,14 +46,15 @@ const MAX_LOG = 400;
 // Incoming event types that would flood the log (audio chunks, keepalives, VAD scores).
 const NOISY_EVENT_TYPES = new Set(["audio", "ping", "vad_score", "audio_alignment"]);
 
-// DRAFT duty labels: confirm against the Context Pack DUTIES_309A `tr` labels before relying on them.
-const DUTIES_TR_DRAFT = [
-  "MCC panolarının kurulumu ve bakımı",
-  "PLC arıza tespiti",
-  "Motor bağlantısı ve devreye alma",
-  "Elektrik projelerini okuma",
-  "Kablo kanalı ve boru döşeme",
-  "Kilitleme/etiketleme (LOTO) uygulaması",
+// Kocaeli demo claim: the six DUTIES_309A `tr` labels (d_mcc, d_plc, d_motors, d_drawings, d_conduit, d_loto)
+// from the Context Pack, verbatim, joined with ", ".
+const DUTIES_TR_DEMO = [
+  "Motor kontrol merkezi kurulumu",
+  "PLC kontrol panosu kablolaması",
+  "Motor ve sürücü arızalarını tespit edip giderme",
+  "Elektrik projelerini okuma ve revize etme",
+  "Kablo kanalı ve kablo tavası döşeme",
+  "Kilitleme-etiketleme ve iş güvenliği",
 ].join(", ");
 
 const DEFAULT_VARS: Record<TestKind, Record<string, string>> = {
@@ -66,7 +67,7 @@ const DEFAULT_VARS: Record<TestKind, Record<string, string>> = {
     start_tr: "Temmuz 2013",
     end_tr: "Mart 2019",
     hours: "45",
-    duties_tr: DUTIES_TR_DRAFT,
+    duties_tr: DUTIES_TR_DEMO,
   },
 };
 
@@ -514,8 +515,9 @@ function Spike() {
               disabled={busy}
             />
             {kind === "verify" && (
-              <p className="small-text warn">
-                duties_tr is a DRAFT. Replace with the six Kocaeli DUTIES_309A tr labels from the Context Pack.
+              <p className="small-text">
+                duties_tr = the six Kocaeli DUTIES_309A tr labels (d_mcc, d_plc, d_motors, d_drawings, d_conduit,
+                d_loto) from the Context Pack.
               </p>
             )}
           </div>
