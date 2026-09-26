@@ -191,20 +191,75 @@ Invoke-RestMethod https://api.elevenlabs.io/v1/user/subscription -Headers @{ 'xi
 - Values live at `analysis.data_collection_results.<id>.value`. They are strings, so `JSON.parse` them and strip code fences defensively.
 - Post-call analysis runs an LLM (default `gemini-2.5-flash`). Its cost is tracked in `metadata.charging.analysis`. Per-call credits are in `metadata.cost`.
 
-## 6. Observed results (fill in after testing)
+## 6. Observed results
+
+Verify agent test, `conv_4001m3fq2sp8e9wvbfnb7qxhc5rb`, run in Chrome on localhost via the spike page.
 
 | Question | Result |
 |---|---|
-| Both agents speak Turkish in Chrome on localhost | ☐ intake ☐ verify |
-| Real `onMessage` payload (paste one user + one agent) | |
-| `confirm_field` calls in one full verify run (target 7) | browser: _ / transcript: _ |
-| `confirm_field` params as received (paste one) | |
-| Webcam recording size / duration / mimeType | |
-| Time from hang-up to `status: done` | |
-| Time from `done` to analysis present | |
-| `employments_json` / `transcript_english_json` / `confirmations_json` parse OK | ☐ ☐ ☐ |
-| Credits per intake test / verify test (`metadata.cost`) | |
-| Did `analysis/run` ever need to be called | |
+| Both agents speak Turkish in Chrome on localhost | ☑ intake ☑ verify |
+| Real `onMessage` payload (paste one user + one agent) | Not captured verbatim from the browser log this run; confirmed equivalent via the GET transcript: `{"role": "agent", "message": "Merhaba Murat Demir Bey. ..."}` and `{"role": "user", "message": "Evet."}` (see full transcript below). |
+| `confirm_field` calls in one full verify run (target 7) | browser: 7 / transcript: 7 — both matched. Order: consent, identity, company, role, dates, hours, duties. |
+| `confirm_field` params as received (paste one) | `{"field": "hours", "status": "corrected", "note": "40 hours per week"}` — a real correction: the agent read back 45 h/wk from `duties_tr`'s sibling variable `hours`, the "employer" said 40, and the tool call captured the correction with an English note, exactly per spec. |
+| Webcam recording size / duration / mimeType | Confirmed recorded and played back on the spike page (visible `<video>` with playback controls after the session ended). Exact byte size / duration / mimeType not read off the recorder log this run — re-check the "recorder" log entry (`event: "stop"`) next time for the numbers. |
+| Time from hang-up to `status: done` | Effectively immediate — `el-fetch.ts` saw `status: done` on its very first poll (`[0.3s] status: done`), meaning the conversation was already `done` by the time the script started polling (run some time after the call ended). |
+| Time from `done` to analysis present | Analysis was already present at `done` — no `analysis/run` fallback was needed. `analysis ready in: ~0.3-0.4s` is just the script's own startup/poll time, not an indication analysis took that long to generate. |
+| `employments_json` / `transcript_english_json` / `confirmations_json` parse OK | ☑ (tested on intake agent, see below) / ☑ (after repair, see below) / ☑ |
+| Credits per intake test / verify test (`metadata.cost`) | Verify test: `metadata.cost` field itself wasn't printed directly, but `charging.call_charge` + `charging.llm_charge` = 1030 + 192 = 1222 credits total (matches `cost (credits): 1222` in the summary) for a 141s call. Intake test cost not yet captured. |
+| Did `analysis/run` ever need to be called | No — analysis was present immediately at `done` for this conversation. |
+
+### Known issue: `transcript_english_json` malformed JSON from the analysis model
+
+On this run, the analysis model returned `transcript_english_json` with a bracket error: the value ended in `..."...good day."}]}` (an extra `}` before the final `]}`) instead of valid `..."...good day."]}`. This caused a raw `JSON.parse` failure: `Expected ',' or ']' after array element in JSON at position 1755`.
+
+`el-fetch.ts`'s `parseJsonValue()` now includes a `tryRepairJson()` fallback that attempts two targeted repairs before giving up: (1) stripping a stray extra closing brace immediately before the final closer, and (2) counting bracket/brace balance and appending any missing closers for truncated output. This specific case was fixed by repair #1; the result is flagged as `ok, REPAIRED` (as opposed to plain `ok`) so it's visible when a value needed salvaging rather than parsing cleanly. `confirmations_json` parsed cleanly with no repair needed on the same call.
+
+This is a known, real-world failure mode for LLM-structured-output generation (more likely on longer arrays, like a full 16-turn transcript) — not a bug in the dashboard config or the data-collection description text. Treat the repair fallback as a pragmatic salvage, not a guarantee; a future analysis result could fail in a way the two targeted repairs don't cover, in which case the fallback chain in section 7 (client-side data, then canned demo data) is the intended next line of defense.
+
+### Analysis model discrepancy
+
+Section 5 assumed the post-call analysis LLM defaults to `gemini-2.5-flash`. The actual `metadata.charging.llm_usage.irreversible_generation.model_usage` for this conversation shows **`qwen35-397b-a17b`**, not Gemini. ElevenLabs may have changed the default model, or the default varies by account tier/region. Don't assume Gemini when reasoning about analysis behavior or cost; check `metadata.charging` on the actual conversation instead.
+
+### Intake agent test, `conv_2801m3frsyphfx3tm0tdx1ww9tvj`
+
+Ran end-to-end afterward to close out the last open item: `employments_json`.
+
+| Question | Result |
+|---|---|
+| `employments_json` parses OK | ☑ — see below. |
+| `transcript_english_json` parses OK | ☑ — parsed cleanly, no repair needed this time (the earlier malformed-JSON issue is model-generation variance, not a per-agent bug). |
+| `confirmations_json` | MISSING — expected, this field only exists on the verify agent. |
+| Duration / cost | 103 s, 836 credits (753 call + 83 LLM). |
+| One job, no `confirm_field` calls (correct — intake agent has no client tools) | Confirmed: `confirm_field tool calls in transcript: 0`. |
+
+Parsed `employments_json`:
+```json
+{
+  "employments": [
+    {
+      "employerName": "Kocaeli Endüstri Elektrik",
+      "city": "Ankara",
+      "country": "Türkiye",
+      "startDate": "2013-07",
+      "endDate": "2019-03",
+      "hoursPerWeek": 45,
+      "roleTitle": "Endüstriyel elektrikçi",
+      "tasks": ["installing motor control centres"],
+      "supervisorName": "Murat Demir",
+      "supervisorTitle": null
+    }
+  ]
+}
+```
+
+Two things worth flagging about this result, not bugs but real observations for whoever builds on this next (B's intake wiring, A2's `lib/elevenlabs/server.ts`):
+
+1. **City mismatch vs. the demo script.** The Context Pack's seeded Kocaeli scenario says the city is Kocaeli; this test run said "Ankara" out loud (tester's choice during the live call, not a scripted value) — `employments_json.city` correctly reflects exactly what was said, "Ankara," not the seed data. This confirms the field is honestly transcribing the spoken claim rather than being influenced by any hidden default, which is good, but means test data used for a demo needs the tester to actually say the intended values.
+2. **`roleTitle` stayed in Turkish** ("Endüstriyel elektrikçi") even though the data-collection instruction asks for `"roleTitle":"English"`. The model reused the Turkish phrase instead of translating it. `tasks` correctly translated/matched to the exact English duty phrase (`"installing motor control centres"`), and `supervisorTitle` was correctly left `null` since it was never asked/stated in this run (the intake system prompt asks for supervisor name AND title, but the tester was only asked for/gave the name here — worth checking the actual conversation flow if this recurs). This roleTitle-language slip is a real, worth-tracking model-compliance gap: the "English" instruction in the description isn't always followed for short title fields. `lib/elevenlabs/server.ts` (A2) or downstream consumers should not assume `roleTitle`/`supervisorTitle` are guaranteed to be in English — validate or re-translate defensively if this matters for the real app.
+
+### Still outstanding
+
+- Exact webcam recording byte size / duration / mimeType from the "recorder" log entry hasn't been recorded verbatim yet (recording itself is confirmed working, just the precise numbers weren't captured).
 
 ## 7. Fallback chain (for B/A integration)
 
