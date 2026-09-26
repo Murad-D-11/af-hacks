@@ -22,3 +22,52 @@ body {
     text-wrap: balance;
   }
 }
+
+/* --- B4 animations: bar fills, panel slide-ins, ready celebration --- */
+
+@keyframes bar-fill {
+  from { width: 0%; }
+}
+.animate-bar-fill {
+  animation: bar-fill 900ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes tile-pop {
+  0% { opacity: 0; transform: scale(0.9) translateY(4px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.animate-tile-pop {
+  animation: tile-pop 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes slide-in-up {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-in-up {
+  animation: slide-in-up 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes celebrate-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35); }
+  50% { box-shadow: 0 0 0 12px rgba(16, 185, 129, 0); }
+}
+.animate-celebrate {
+  animation: celebrate-pulse 1.8s ease-out 2;
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(-12px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(64px) rotate(200deg); opacity: 0; }
+}
+.animate-confetti {
+  animation: confetti-fall 900ms ease-in forwards;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+.animate-pulse-ring {
+  animation: pulse-ring 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
