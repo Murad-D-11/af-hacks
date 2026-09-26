@@ -102,13 +102,17 @@ Tone: polite, brief, no pressure, under the configured max call duration. NEVER 
 - Type: Client. Name exactly `confirm_field` (the browser handler matches on this string).
 - "Wait for response": ON. Without this the agent does not await the tool, and the tool counts as non-blocking.
 - Response timeout: 5 s. The browser handler returns `"ok"` immediately.
+- Tool description (paste into the tool's own description field):
+  ```
+  Call this after reading back one field to the employer and getting their response. Records whether they confirmed the value as correct, corrected it, or gave an unclear answer. Must be called once for each of: consent, identity, company, role, dates, hours, duties (7 times total in a full verification call).
+  ```
 - Parameters:
 
-| Param | Type | Required | Enum |
-|---|---|---|---|
-| `field` | string | yes | `consent`, `identity`, `company`, `role`, `dates`, `hours`, `duties` |
-| `status` | string | yes | `confirmed`, `corrected`, `unclear` |
-| `note` | string | no | (free text; English summary of a correction or ambiguity) |
+| Param | Type | Required | Enum | Description |
+|---|---|---|---|---|
+| `field` | string | yes | `consent`, `identity`, `company`, `role`, `dates`, `hours`, `duties` | Which fact is being confirmed in this call. Must match the field you just read back to the employer. |
+| `status` | string | yes | `confirmed`, `corrected`, `unclear` | The employer's response: "confirmed" if they said the value is correct, "corrected" if they gave a different value instead, "unclear" if their answer did not clearly confirm or deny it. |
+| `note` | string | no | (free text) | If status is "corrected", the employer's correct value in English. If status is "unclear", a short English note on why. Leave empty if status is "confirmed". |
 
 Data collection (Analysis tab), type `string`:
 
