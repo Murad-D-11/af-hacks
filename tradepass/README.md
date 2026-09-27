@@ -66,7 +66,38 @@ Skilled Trades Ontario still makes every decision. TradePass makes the file comp
 
 ## Voice and evidence
 
-> _Owned by the ElevenLabs / employer-side developer — agent configuration, the employer verification flow, video capture and fingerprinting, and PDF generation are documented separately in `docs/elevenlabs-agents.md`._
+Full agent configuration (prompts, first messages, tool schemas, data-collection descriptions, and the dashboard click-by-click) lives in `docs/elevenlabs-agents.md`. This section is the short version for running a demo.
+
+### The two agents
+
+- **Intake agent** (`TradePass Intake (TR)`) — Turkish, public, no client tools. Asks the worker one question at a time about each past job, then structures the answers into `employments_json` (English, labelled as claims) and `transcript_english_json`.
+- **Verification agent** (`TradePass Verify (TR)`) — Turkish, public, one blocking client tool (`confirm_field`). Reads back the employer's own form answers — never introduces a fact — and calls `confirm_field` once per field (consent, identity, company, role, dates, hours, duties; 7 calls in a full run). Produces `confirmations_json` and `transcript_english_json` as a post-call backup for anything the client-side tool call missed.
+
+Both agents' Turkish voice sessions run through `@elevenlabs/react`'s `<ConversationProvider>` / `useConversation()`, entirely in the browser — no server-side ElevenLabs calls happen during the call itself. The server only fetches the finished conversation afterward, via `lib/elevenlabs/server.ts`.
+
+### Live vs. simulated
+
+`NEXT_PUBLIC_VOICE_MODE` controls which mode the intake and verification flows use:
+
+- `simulated` (default, **no ElevenLabs credits used**) — a scripted conversation (`lib/evidence/simulated.ts`) plays back on timers, with the agent's lines spoken by the browser's `speechSynthesis` API (`tr-TR`). This is what the demo script above assumes, and it's safe to run as many times as you like.
+- `live` — a real ElevenLabs voice session. Needs `ELEVENLABS_API_KEY`, `NEXT_PUBLIC_ELEVENLABS_INTAKE_AGENT_ID`, and `NEXT_PUBLIC_ELEVENLABS_VERIFY_AGENT_ID` set in `.env.local`, and both agents configured in the ElevenLabs dashboard exactly per `docs/elevenlabs-agents.md`. Camera and microphone permission are required; a live verification call has no fallback if the camera is missing (recording is mandatory for real evidence). `scripts/preflight.ps1` warns if these env vars are missing while live mode is selected.
+
+### Credits
+
+A full live verification call (\~140s, 7 `confirm_field` calls, post-call analysis) cost about **1,200 credits** in testing; a full live intake call (\~100s, one job) cost about **840 credits**. Check remaining credits any time with:
+
+```powershell
+Invoke-RestMethod https://api.elevenlabs.io/v1/user/subscription -Headers @{ 'xi-api-key' = '<your key>' } | Select-Object character_count, character_limit
+```
+
+If credits are tight before a demo, use `simulated` mode — it exercises the exact same UI, checklist, transcript, and finalize/PDF logic, just without spending anything.
+
+### Recording tip
+
+To capture a live (or simulated) session for a pitch video, screen-record with **system audio included** so the agent's spoken lines (via ElevenLabs TTS or `speechSynthesis`) are actually audible in the recording — the interview's own webcam capture only records the *employer's* microphone, not the assistant's voice:
+
+- **Windows Game Bar**: `Win + G`, then the record button — make sure "Record audio when I record a game or app" (or the equivalent "capture system audio" toggle) is on.
+- **OBS Studio**: add a "Desktop Audio" source alongside the browser window/display capture, so both the assistant's TTS and the employer's mic get mixed into one recording.
 
 ## Disclaimers
 
