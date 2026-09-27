@@ -14,12 +14,11 @@ function clearVideos() {
   }
 }
 
-export async function POST(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const scenarioParam = searchParams.get('scenario');
-  const scenario = scenarioParam === 'intake' ? 'intake' : 'full';
-
-  const db = buildSeed(scenario);
+// EN: 'scenario' used to select between two different starting states, but
+// buildSeed() no longer branches on it — every worker's starting state is fixed
+// regardless of scenario (see lib/seed.ts). POST takes no body/params now.
+export async function POST() {
+  const db = buildSeed('full');
   writeDb(db);
   clearVideos();
 

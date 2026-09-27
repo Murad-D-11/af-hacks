@@ -5,7 +5,11 @@ import { readDb, writeDb } from '@/lib/store';
 import { clientInfo } from '@/lib/evidence/audit';
 import type { VoiceMode } from '@/lib/types';
 
-const STARTABLE_STATUSES = new Set(['form_submitted', 'interviewing']);
+// 'completed' is included so an employer can redo the video interview from their same
+// link after finishing once — /interview/complete already tolerates re-submission from
+// 'completed' by overwriting the previous result, so re-opening 'interviewing' here is
+// consistent with that.
+const STARTABLE_STATUSES = new Set(['form_submitted', 'interviewing', 'completed']);
 
 interface StartBody {
   mode?: VoiceMode;

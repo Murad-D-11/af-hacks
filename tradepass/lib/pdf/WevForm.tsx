@@ -5,7 +5,7 @@ import { styles, PdfHeader, PdfFooter } from './PdfLayout';
 import { DUTIES_309A } from '../skills/309A';
 import { SKILL_SETS_309A } from '../skills/309A';
 import { monthEn } from '../hours';
-import type { Employment, VerificationRequest, Worker } from '../types';
+import type { VerificationRequest, Worker } from '../types';
 
 function dutyRow(id: string) {
   const duty = DUTIES_309A.find((d) => d.id === id);
@@ -16,11 +16,9 @@ function dutyRow(id: string) {
 
 export function WevForm({
   worker,
-  employment,
   request,
 }: {
   worker: Worker;
-  employment: Employment;
   request: VerificationRequest;
 }) {
   const { answers, result, audit } = request;

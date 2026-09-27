@@ -82,7 +82,7 @@ export async function resolveTranscriptAndConfirmations(params: {
     const conv = await waitForConversation(conversationId, { timeoutMs: 60_000 });
     if (conv) {
       const transcript = toTranscriptLines(conv, 'employer');
-      const confirmations = fillMissingConfirmations(clientConfirmations, conv, conversationId);
+      const confirmations = fillMissingConfirmations(clientConfirmations, conv);
       return { transcript, confirmations, transcriptSource: 'elevenlabs', analysisUnavailable: false };
     }
     // Analysis never came back — fall back to whatever the browser captured live.
@@ -107,7 +107,6 @@ export async function resolveTranscriptAndConfirmations(params: {
 function fillMissingConfirmations(
   clientConfirmations: FieldConfirmation[],
   conv: Parameters<typeof parseJsonField>[0],
-  _conversationId: string,
 ): FieldConfirmation[] {
   const have = new Set(clientConfirmations.map((c) => c.field));
   const missing = CONFIRM_FIELDS.filter((f) => !have.has(f));

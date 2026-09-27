@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ConversationProvider, useConversation } from '@elevenlabs/react';
 import type { Employment, TranscriptLine } from '@/lib/types';
 import Card from '@/components/ui/Card';
+import Button from '@/components/ui/Button';
 import MicButton, { type MicState } from './MicButton';
 import TranscriptBubble from './TranscriptBubble';
 import EmploymentClaimCard from './EmploymentClaimCard';
@@ -60,7 +61,9 @@ function IntakeInner({ workerId, workerName }: { workerId: string; workerName: s
         setSubmitPhase('done');
       } catch (err) {
         console.error(err);
-        setErrorMessage("Something went wrong structuring your history. You can still continue — we'll show what we captured.");
+        // EN: Something went wrong structuring your history. You can still continue —
+        // we'll show what we captured.
+        setErrorMessage('Geçmişiniz düzenlenirken bir sorun oluştu. Yine de devam edebilirsiniz — kaydettiklerimizi göstereceğiz.');
         setSubmitPhase('error');
       }
     },
@@ -165,13 +168,35 @@ function IntakeInner({ workerId, workerName }: { workerId: string; workerName: s
     }
   }, [conversation, conversationId, submitIntake]);
 
+  /** Discards the just-submitted intake and returns to the mic button so the worker
+   * can speak again from scratch. The next successful submission overwrites the
+   * previous one server-side (POST /api/workers/[id]/intake replaces worker.intake
+   * and re-upserts matching employments), so nothing extra needs to happen here. */
+  const handleRedo = useCallback(() => {
+    simulatedTimers.current.forEach(clearTimeout);
+    simulatedTimers.current = [];
+    submittedRef.current = false;
+    setTranscript([]);
+    transcriptRef.current = [];
+    setConversationId(null);
+    conversationIdRef.current = null;
+    setEmployments(null);
+    setErrorMessage(null);
+    setSubmitPhase('idle');
+    setMicState('idle');
+  }, []);
+
   return (
     <div className="space-y-8">
       {micState === 'idle' && (
-        <Card className="text-center">
-          <p className="mb-6 text-sm text-slate-600">
-            We&apos;ll ask to use your microphone. Everything you say is recorded and transcribed so your former
-            employers can verify it later — nothing is shared until you send them a link.
+        <Card className="animate-stamp-in text-center">
+          <p className="mb-6 text-sm text-foreground/60">
+            {/* EN: We'll ask to use your microphone. Everything you say is recorded
+                and transcribed so your former employers can verify it later — nothing
+                is shared until you send them a link. */}
+            Mikrofonunuzu kullanmak için izin isteyeceğiz. Söylediğiniz her şey kaydedilir ve yazıya dökülür, böylece
+            eski işverenleriniz daha sonra doğrulayabilir — siz onlara bir bağlantı gönderene kadar hiçbir bilgi
+            paylaşılmaz.
           </p>
           <div className="flex justify-center">
             <MicButton state={micState} onStart={handleStart} onEnd={handleEnd} />
@@ -192,39 +217,55 @@ function IntakeInner({ workerId, workerName }: { workerId: string; workerName: s
 
       {micState === 'ended' && submitPhase !== 'done' && (
         <Card className="text-center">
-          <p className="text-sm text-slate-600">
-            {submitPhase === 'error' ? errorMessage : 'Structuring your history… this can take up to a minute.'}
+          <p className="text-sm text-foreground/60">
+            {/* EN: {errorMessage} / Structuring your history… this can take up to a minute. */}
+            {submitPhase === 'error' ? errorMessage : 'Geçmişiniz düzenleniyor… bu işlem bir dakikaya kadar sürebilir.'}
           </p>
         </Card>
       )}
 
       {micState === 'ended' && submitPhase === 'done' && employments && (
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="animate-rise-in grid gap-6 lg:grid-cols-2">
           <div>
-            <h2 className="mb-3 font-serif text-lg font-medium text-slate-900">Transcript</h2>
-            <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-4">
+            {/* EN: Transcript */}
+            <h2 className="font-stamp mb-3 text-lg font-bold uppercase tracking-wide text-foreground">Konuşma Metni</h2>
+            <div className="space-y-2 border border-line bg-background p-4">
               {transcript.map((line, i) => (
                 <TranscriptBubble key={i} line={line} />
               ))}
             </div>
           </div>
           <div>
-            <h2 className="mb-3 font-serif text-lg font-medium text-slate-900">Work history</h2>
+            {/* EN: Work history */}
+            <h2 className="font-stamp mb-3 text-lg font-bold uppercase tracking-wide text-foreground">Çalışma Geçmişi</h2>
             <div className="space-y-4">
               {employments.length === 0 ? (
                 <Card>
-                  <p className="text-sm text-slate-500">No employment could be structured from this conversation yet.</p>
+                  <p className="text-sm text-foreground/50">
+                    {/* EN: No employment could be structured from this conversation yet. */}
+                    Bu görüşmeden henüz bir iş geçmişi çıkarılamadı.
+                  </p>
                 </Card>
               ) : (
                 employments.map((e) => <EmploymentClaimCard key={e.id} employment={e} />)
               )}
             </div>
-            <div className="mt-6 text-right">
-              <a
-                href={`/workers/${workerId}`}
-                className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700"
-              >
-                Continue →
+            <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
+              <Button variant="secondary" onClick={handleRedo}>
+                {/* EN: Redo intake */}
+                Tekrar kaydet
+              </Button>
+              <a href={`/api/workers/${workerId}/package`} target="_blank" rel="noopener noreferrer">
+                <Button variant="secondary">
+                  {/* EN: Download evidence package (PDF) */}
+                  Kanıt paketini indir (PDF)
+                </Button>
+              </a>
+              <a href={`/workers/${workerId}`}>
+                <Button>
+                  {/* EN: Continue → */}
+                  Devam et →
+                </Button>
               </a>
             </div>
           </div>

@@ -2,19 +2,52 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================================
+   INSPECTION LEDGER THEME
+   A dark, high-contrast site-inspection aesthetic: graphite plate background,
+   one loud safety-orange accent (hazard tape / hi-vis gear), a caution-yellow
+   secondary for warnings, hard square edges (no soft rounded cards — this is
+   steel and stamped paper, not glass), and a stamped/punched motion language
+   instead of soft fades.
+   ============================================================================ */
+
 :root {
-  --background: #f1f5f9;
-  --foreground: #0f172a;
+  --background: #14171a;   /* graphite plate */
+  --foreground: #e8e6df;   /* aged paper white */
+  --plate: #1b1f23;        /* card/panel surface — slightly lifted off bg */
+  --plate-raised: #22262b; /* hover/active surface */
+  --line: #35393e;         /* hairline grid / dividers */
+  --paper: #ece7d8;        /* light "form" surface for stamped documents */
+  --ink: #14171a;          /* text on paper */
+  --orange: #ff5c1a;       /* the one loud accent — safety orange */
+  --orange-dim: #c94a15;
+  --caution: #f2c14e;      /* caution yellow, secondary accent */
+  --signal: #38d68f;       /* verified/go green, used sparingly */
+  --danger: #ff4d4d;
+  --steel: #5cc2d6;        /* cool readout blue — "in progress", info states */
 }
 
 body {
   color: var(--foreground);
-  background: var(--background);
-  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+  font-family: var(--font-ledger), ui-monospace, monospace;
+  background-color: var(--background);
+  /* Diagonal hazard-stripe watermark in the corners + a fine structural grid,
+     both very low opacity so they read as texture, not decoration. Fixed so
+     the plate doesn't scroll with content. */
+  background-image:
+    repeating-linear-gradient(135deg, rgba(255, 92, 26, 0.05) 0px, rgba(255, 92, 26, 0.05) 14px, transparent 14px, transparent 28px),
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: auto, 24px 24px, 24px 24px;
+  background-position: top right, 0 0, 0 0;
+  background-repeat: repeat, repeat, repeat;
+  background-attachment: fixed, fixed, fixed;
 }
 
-.font-serif {
-  font-family: var(--font-fraunces), Georgia, serif;
+/* Stamped stencil display face — used for all major headings via .font-stamp. */
+.font-stamp {
+  font-family: var(--font-stamp), "Arial Narrow", sans-serif;
+  letter-spacing: 0.02em;
 }
 
 @layer utilities {
@@ -23,37 +56,86 @@ body {
   }
 }
 
-/* --- B4 animations: bar fills, panel slide-ins, ready celebration --- */
+/* --- Surface language -------------------------------------------------------
+   Panels are hard-edged steel plates with a 2px orange top rail instead of a
+   soft ambient shadow. "Paper" surfaces (forms, stamped documents) are a warm
+   off-white with dark ink text — a deliberate light/dark inversion inside a
+   dark app, like a physical form under a work light. */
+@layer components {
+  .plate {
+    background-color: var(--plate);
+    border: 1px solid var(--line);
+    border-top: 2px solid var(--orange);
+  }
+}
+
+/* --- Bolt/rivet corner marks: 4 tiny squares in the corners of a panel, like
+   a riveted steel plate. Applied via ::before/::after would need 4 pseudo
+   elements, so instead this is a background-image trick: 4 small radial dots
+   positioned at each corner. --- */
+.rivets {
+  background-image:
+    radial-gradient(circle 2.5px at 10px 10px, rgba(232, 230, 223, 0.35), transparent 100%),
+    radial-gradient(circle 2.5px at calc(100% - 10px) 10px, rgba(232, 230, 223, 0.35), transparent 100%),
+    radial-gradient(circle 2.5px at 10px calc(100% - 10px), rgba(232, 230, 223, 0.35), transparent 100%),
+    radial-gradient(circle 2.5px at calc(100% - 10px) calc(100% - 10px), rgba(232, 230, 223, 0.35), transparent 100%);
+}
+
+/* ============================================================================
+   MOTION — a stamping/punch-in language: things slam down and settle
+   (overshoot + quick settle) rather than gently fading up. Kept from the prior
+   pass where the concept still fits (bar fills, staggered tiles) but re-tuned.
+   ============================================================================ */
+
+@keyframes stamp-in {
+  0% { opacity: 0; transform: scale(1.4) rotate(-3deg); }
+  60% { opacity: 1; transform: scale(0.96) rotate(1deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+.animate-stamp-in {
+  animation: stamp-in 380ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes punch-in {
+  0% { opacity: 0; transform: translateY(-6px) scaleY(1.3); }
+  55% { opacity: 1; transform: translateY(1px) scaleY(0.97); }
+  100% { opacity: 1; transform: translateY(0) scaleY(1); }
+}
+.animate-punch-in {
+  animation: punch-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: top;
+}
 
 @keyframes bar-fill {
   from { width: 0%; }
 }
 .animate-bar-fill {
-  animation: bar-fill 900ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: bar-fill 700ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
 }
 
 @keyframes tile-pop {
-  0% { opacity: 0; transform: scale(0.9) translateY(4px); }
+  0% { opacity: 0; transform: scale(0.85) translateY(6px); }
+  70% { opacity: 1; transform: scale(1.03) translateY(0); }
   100% { opacity: 1; transform: scale(1) translateY(0); }
 }
 .animate-tile-pop {
-  animation: tile-pop 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: tile-pop 380ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 @keyframes slide-in-up {
-  0% { opacity: 0; transform: translateY(12px); }
+  0% { opacity: 0; transform: translateY(10px); }
   100% { opacity: 1; transform: translateY(0); }
 }
 .animate-slide-in-up {
-  animation: slide-in-up 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: slide-in-up 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @keyframes celebrate-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35); }
-  50% { box-shadow: 0 0 0 12px rgba(16, 185, 129, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(56, 214, 143, 0.45); }
+  50% { box-shadow: 0 0 0 10px rgba(56, 214, 143, 0); }
 }
 .animate-celebrate {
-  animation: celebrate-pulse 1.8s ease-out 2;
+  animation: celebrate-pulse 1.4s ease-out 3;
 }
 
 @keyframes confetti-fall {
@@ -61,13 +143,42 @@ body {
   100% { transform: translateY(64px) rotate(200deg); opacity: 0; }
 }
 .animate-confetti {
-  animation: confetti-fall 900ms ease-in forwards;
+  animation: confetti-fall 800ms ease-in forwards;
 }
 
 @keyframes pulse-ring {
-  0% { transform: scale(0.9); opacity: 0.6; }
-  100% { transform: scale(1.6); opacity: 0; }
+  0% { transform: scale(0.9); opacity: 0.7; }
+  100% { transform: scale(1.7); opacity: 0; }
 }
 .animate-pulse-ring {
-  animation: pulse-ring 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  animation: pulse-ring 1.3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Page-load reveal: stagger children with inline animation-delay. */
+@keyframes rise-in {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.animate-rise-in {
+  animation: rise-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* "Live/recording" indicator — a hard blink rather than a soft glow, like an
+   old tally-light, not a modern soft pulse. */
+@keyframes rec-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0.25; }
+}
+.animate-rec {
+  animation: rec-blink 1s steps(1) infinite;
+}
+
+/* Marching hazard stripes for progress-bar fills — a diagonal repeating
+   gradient that itself scrolls, like caution tape in motion. */
+@keyframes march {
+  0% { background-position: 0 0; }
+  100% { background-position: 28px 0; }
+}
+.animate-march {
+  animation: march 900ms linear infinite;
 }

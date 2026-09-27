@@ -23,10 +23,10 @@ function MiniBar({ verifiedHours }: { verifiedHours: number }) {
   const pct = Math.min(100, (verifiedHours / REQUIRED_HOURS_309A) * 100);
   return (
     <div className="flex items-center gap-2">
-      <div className="h-1.5 w-20 overflow-hidden rounded-full bg-slate-100">
-        <div className="h-full rounded-full bg-emerald-600" style={{ width: `${pct}%` }} />
+      <div className="h-2 w-20 overflow-hidden border border-line bg-background">
+        <div className="h-full bg-orange" style={{ width: `${pct}%` }} />
       </div>
-      <span className="font-mono text-xs text-slate-500">{verifiedHours.toLocaleString('en-CA')}/{REQUIRED_HOURS_309A.toLocaleString('en-CA')}</span>
+      <span className="font-mono text-xs text-foreground/50">{verifiedHours.toLocaleString('en-CA')}/{REQUIRED_HOURS_309A.toLocaleString('en-CA')}</span>
     </div>
   );
 }
@@ -34,6 +34,7 @@ function MiniBar({ verifiedHours }: { verifiedHours: number }) {
 export default function DashboardPage() {
   const [rows, setRows] = useState<WorkerRow[] | null>(null);
   const [resetting, setResetting] = useState(false);
+  const [resetMessage, setResetMessage] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null);
 
   const load = useCallback(async () => {
     const workersRes = await fetch('/api/workers');
@@ -52,11 +53,17 @@ export default function DashboardPage() {
     load();
   }, [load]);
 
-  const handleReset = async (scenario: 'full' | 'intake') => {
+  const handleReset = async () => {
     setResetting(true);
+    setResetMessage(null);
     try {
-      await fetch(`/api/demo/reset?scenario=${scenario}`, { method: 'POST' });
+      const res = await fetch('/api/demo/reset', { method: 'POST' });
+      if (!res.ok) throw new Error(`Reset failed: ${res.status}`);
       await load();
+      setResetMessage({ tone: 'ok', text: 'Demo data reset.' });
+    } catch (err) {
+      console.error(err);
+      setResetMessage({ tone: 'error', text: "Couldn't reset demo data. Check the server log and try again." });
     } finally {
       setResetting(false);
     }
@@ -65,7 +72,7 @@ export default function DashboardPage() {
   if (!rows) {
     return (
       <Card>
-        <p className="text-sm text-slate-500">Loading…</p>
+        <p className="text-sm text-foreground/50">Loading…</p>
       </Card>
     );
   }
@@ -79,38 +86,41 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-serif text-3xl font-semibold text-slate-900">Your crew&apos;s path to licensing</h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Verified experience files for 309A Construction &amp; Maintenance Electrician, built from voice claims and
-          employer-confirmed video.
+      <div className="animate-rise-in">
+        <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-orange">Site Ledger</p>
+        <h1 className="font-stamp mt-1 text-4xl font-bold uppercase tracking-wide text-foreground">
+          Your crew&apos;s path to licensing
+        </h1>
+        <p className="mt-2 text-sm text-foreground/60">
+          Verified experience files for skilled trades workers, built from voice claims and employer-confirmed
+          video.
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Card>
-          <p className="text-xs uppercase tracking-wide text-slate-400">Workers in progress</p>
-          <p className="mt-1 font-mono text-3xl font-semibold text-slate-900">{workersInProgress}</p>
+        <Card className="animate-stamp-in" style={{ animationDelay: '40ms' }}>
+          <p className="text-xs uppercase tracking-wide text-foreground/40">Workers in progress</p>
+          <p className="mt-1 font-mono text-3xl font-semibold text-foreground">{workersInProgress}</p>
         </Card>
-        <Card>
-          <p className="text-xs uppercase tracking-wide text-slate-400">Employers verified</p>
-          <p className="mt-1 font-mono text-3xl font-semibold text-slate-900">{employersVerified}</p>
+        <Card className="animate-stamp-in" style={{ animationDelay: '100ms' }}>
+          <p className="text-xs uppercase tracking-wide text-foreground/40">Employers verified</p>
+          <p className="mt-1 font-mono text-3xl font-semibold text-foreground">{employersVerified}</p>
         </Card>
-        <Card>
-          <p className="text-xs uppercase tracking-wide text-slate-400">Total verified hours</p>
-          <p className="mt-1 font-mono text-3xl font-semibold text-slate-900">{totalVerifiedHours.toLocaleString('en-CA')}</p>
+        <Card className="animate-stamp-in" style={{ animationDelay: '160ms' }}>
+          <p className="text-xs uppercase tracking-wide text-foreground/40">Total verified hours</p>
+          <p className="mt-1 font-mono text-3xl font-semibold text-orange">{totalVerifiedHours.toLocaleString('en-CA')}</p>
         </Card>
       </div>
 
-      <Card className="overflow-x-auto">
+      <Card className="animate-rise-in overflow-x-auto" style={{ animationDelay: '220ms' }}>
         {rows.length === 0 ? (
-          <p className="text-sm text-slate-600">
-            No workers yet. Seed the database with <code className="rounded bg-slate-100 px-1.5 py-0.5">npx tsx scripts/seed.ts</code>.
+          <p className="text-sm text-foreground/60">
+            No workers yet. Seed the database with <code className="bg-background px-1.5 py-0.5 text-foreground/80">npx tsx scripts/seed.ts</code>.
           </p>
         ) : (
           <table className="w-full min-w-[640px] text-left text-sm">
             <thead>
-              <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-400">
+              <tr className="border-b border-line text-xs uppercase tracking-wide text-foreground/40">
                 <th className="pb-2 pr-4">Name</th>
                 <th className="pb-2 pr-4">Country</th>
                 <th className="pb-2 pr-4">Role</th>
@@ -125,15 +135,15 @@ export default function DashboardPage() {
                 const statusKey = assessment.readyToSubmit ? 'ready' : assessment.verifiedHours + assessment.claimedHours > 0 ? 'in_progress' : 'not_started';
                 const status = STATUS_LABEL[statusKey];
                 return (
-                  <tr key={worker.id} className="border-b border-slate-100 last:border-0">
-                    <td className="py-3 pr-4 font-medium text-slate-900">{worker.name}</td>
-                    <td className="py-3 pr-4 text-slate-600">{worker.homeCountry}</td>
-                    <td className="py-3 pr-4 text-slate-600">{worker.currentRole}</td>
+                  <tr key={worker.id} className="border-b border-line/60 last:border-0 hover:bg-plate-raised">
+                    <td className="py-3 pr-4 font-medium text-foreground">{worker.name}</td>
+                    <td className="py-3 pr-4 text-foreground/60">{worker.homeCountry}</td>
+                    <td className="py-3 pr-4 text-foreground/60">{worker.currentRole}</td>
                     <td className="py-3 pr-4"><MiniBar verifiedHours={assessment.verifiedHours} /></td>
-                    <td className="py-3 pr-4 font-mono text-slate-700">{assessment.verifiedCount}/{assessment.totalSkillSets}</td>
+                    <td className="py-3 pr-4 font-mono text-foreground/70">{assessment.verifiedCount}/{assessment.totalSkillSets}</td>
                     <td className="py-3 pr-4"><Badge tone={status.tone}>{status.label}</Badge></td>
                     <td className="py-3 text-right">
-                      <Link href={`/workers/${worker.id}`} className="text-xs font-medium text-emerald-700 hover:text-emerald-800">
+                      <Link href={`/workers/${worker.id}`} className="text-xs font-semibold uppercase text-orange hover:text-[#ff7038]">
                         View →
                       </Link>
                     </td>
@@ -145,14 +155,16 @@ export default function DashboardPage() {
         )}
       </Card>
 
-      <footer className="flex items-center justify-between border-t border-slate-200 pt-4">
-        <p className="text-xs text-slate-400">Demo controls</p>
-        <div className="flex gap-2">
-          <Button variant="ghost" disabled={resetting} onClick={() => handleReset('intake')}>
-            Reset (intake)
-          </Button>
-          <Button variant="secondary" disabled={resetting} onClick={() => handleReset('full')}>
-            Reset (full)
+      <footer className="flex items-center justify-between border-t border-line pt-4">
+        <p className="text-xs uppercase tracking-wide text-foreground/40">Demo controls</p>
+        <div className="flex items-center gap-3">
+          {resetMessage && (
+            <p className={`text-xs ${resetMessage.tone === 'ok' ? 'text-foreground/60' : 'text-danger'}`}>
+              {resetMessage.text}
+            </p>
+          )}
+          <Button variant="secondary" disabled={resetting} onClick={() => void handleReset()}>
+            {resetting ? 'Resetting…' : 'Reset demo data'}
           </Button>
         </div>
       </footer>

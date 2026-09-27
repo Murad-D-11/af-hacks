@@ -26,7 +26,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   }
 
   registerFonts();
-  const buffer = await renderToBuffer(<WevForm worker={worker} employment={employment} request={request} />);
+  const buffer = await renderToBuffer(<WevForm worker={worker} request={request} />);
 
   return new Response(new Uint8Array(buffer), {
     status: 200,

@@ -40,28 +40,28 @@ function dutyLabel(id: string): { en: string; code: string } | null {
 
 function ChecklistRow({ confirmation }: { confirmation: FieldConfirmation | undefined; field: ConfirmField }) {
   if (!confirmation) {
-    return <span className="inline-flex h-2 w-2 rounded-full bg-slate-300" title="Pending" />;
+    return <span className="inline-flex h-2 w-2 bg-foreground/20" title="Pending" />;
   }
   const tone =
     confirmation.status === 'confirmed'
-      ? 'bg-emerald-500'
+      ? 'bg-orange'
       : confirmation.status === 'corrected'
-        ? 'bg-amber-500'
-        : 'bg-slate-400';
-  return <span className={`inline-flex h-2 w-2 rounded-full ${tone}`} title={confirmation.status} />;
+        ? 'bg-caution'
+        : 'bg-foreground/30';
+  return <span className={`inline-flex h-2 w-2 ${tone}`} title={confirmation.status} />;
 }
 
 function TranscriptView({ transcript }: { transcript: TranscriptLine[] }) {
   if (transcript.length === 0) {
-    return <p className="text-sm text-slate-400">No transcript available.</p>;
+    return <p className="text-sm text-foreground/40">No transcript available.</p>;
   }
   return (
     <ol className="max-h-80 space-y-2 overflow-y-auto text-sm">
       {transcript.map((line, i) => (
-        <li key={i} className="rounded-lg border border-slate-100 p-2">
-          <p className="text-xs uppercase tracking-wide text-slate-400">{line.speaker}</p>
-          <p className="text-slate-800">{line.original}</p>
-          <p className="text-xs italic text-slate-500">
+        <li key={i} className="border border-line p-2">
+          <p className="text-xs uppercase tracking-wide text-foreground/40">{line.speaker}</p>
+          <p className="text-foreground/80">{line.original}</p>
+          <p className="text-xs italic text-foreground/50">
             {line.english ?? 'translation unavailable'}
           </p>
         </li>
@@ -86,7 +86,7 @@ function AuditView({ request }: { request: VerificationRequest }) {
         <AuditItem label="Video duration" value={audit.videoDurationSec ? `${audit.videoDurationSec}s` : '—'} />
       </dl>
       <div>
-        <p className="mb-1 text-xs uppercase tracking-wide text-slate-400">Event timeline</p>
+        <p className="mb-1 text-xs uppercase tracking-wide text-foreground/40">Event timeline</p>
         <EventTimeline events={audit.events} />
       </div>
     </div>
@@ -96,20 +96,20 @@ function AuditView({ request }: { request: VerificationRequest }) {
 function AuditItem({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <dt className="text-xs uppercase tracking-wide text-slate-400">{label}</dt>
-      <dd className={`break-all text-slate-800 ${mono ? 'font-mono text-xs' : ''}`}>{value}</dd>
+      <dt className="text-xs uppercase tracking-wide text-foreground/40">{label}</dt>
+      <dd className={`break-all text-foreground/80 ${mono ? 'font-mono text-xs' : ''}`}>{value}</dd>
     </div>
   );
 }
 
 function EventTimeline({ events }: { events: AuditEvent[] }) {
-  if (events.length === 0) return <p className="text-xs text-slate-400">No events recorded.</p>;
+  if (events.length === 0) return <p className="text-xs text-foreground/40">No events recorded.</p>;
   return (
     <ol className="space-y-1.5">
       {events.map((e, i) => (
-        <li key={i} className="flex gap-2 text-xs text-slate-600">
-          <span className="font-mono text-slate-400">{new Date(e.at).toLocaleString('en-CA')}</span>
-          <span className="font-medium text-slate-500">{e.type}</span>
+        <li key={i} className="flex gap-2 text-xs text-foreground/60">
+          <span className="font-mono text-foreground/40">{new Date(e.at).toLocaleString('en-CA')}</span>
+          <span className="font-medium text-foreground/50">{e.type}</span>
           <span>{e.detail}</span>
         </li>
       ))}
@@ -125,7 +125,7 @@ export default function VerificationCard({ request, employment }: { request: Ver
   if (!result || !answers) {
     return (
       <Card>
-        <p className="text-sm text-slate-500">Verification result not available yet.</p>
+        <p className="text-sm text-foreground/50">Verification result not available yet.</p>
       </Card>
     );
   }
@@ -146,7 +146,7 @@ export default function VerificationCard({ request, employment }: { request: Ver
             <Badge tone={outcomeTone(result.outcome)}>{result.outcome.toUpperCase()}</Badge>
             {isSimulated && <Badge tone="gray">Simulated interview</Badge>}
           </div>
-          <p className="mt-2 text-sm text-slate-600">
+          <p className="mt-2 text-sm text-foreground/60">
             Confirmed by the employer on recorded video
             {completedDate ? ` · ${completedDate}` : ''} · consent given
           </p>
@@ -158,13 +158,13 @@ export default function VerificationCard({ request, employment }: { request: Ver
         <div>
           {request.videoFile ? (
             <video
-              className="w-full rounded-xl bg-slate-900"
+              className="w-full border border-line bg-background"
               controls
               src={`/api/requests/${request.id}/video`}
               aria-label="Recorded verification interview"
             />
           ) : (
-            <div className="flex aspect-video w-full items-center justify-center rounded-xl bg-slate-100 text-sm text-slate-400">
+            <div className="flex aspect-video w-full items-center justify-center border border-line bg-background text-sm text-foreground/40">
               Recording on file
             </div>
           )}
@@ -173,54 +173,54 @@ export default function VerificationCard({ request, employment }: { request: Ver
         {/* Right: employer states vs worker claimed */}
         <div>
           <div className="grid grid-cols-2 gap-3 text-sm">
-            <div className="rounded-lg bg-slate-50 p-3">
-              <p className="text-xs uppercase tracking-wide text-slate-400">Employer states</p>
+            <div className="border border-line bg-background p-3">
+              <p className="text-xs uppercase tracking-wide text-foreground/40">Employer states</p>
               <dl className="mt-2 space-y-2">
                 <div>
-                  <dt className="text-xs text-slate-400">Dates</dt>
-                  <dd className="font-mono text-slate-800">{monthEn(answers.startDate)} – {monthEn(answers.endDate)}</dd>
+                  <dt className="text-xs text-foreground/40">Dates</dt>
+                  <dd className="font-mono text-foreground/80">{monthEn(answers.startDate)} – {monthEn(answers.endDate)}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-slate-400">Hours / week</dt>
-                  <dd className="font-mono text-slate-800">{answers.hoursPerWeek}</dd>
+                  <dt className="text-xs text-foreground/40">Hours / week</dt>
+                  <dd className="font-mono text-foreground/80">{answers.hoursPerWeek}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-slate-400">Role</dt>
-                  <dd className="text-slate-800">{answers.roleTitle}</dd>
+                  <dt className="text-xs text-foreground/40">Role</dt>
+                  <dd className="text-foreground/80">{answers.roleTitle}</dd>
                 </div>
               </dl>
             </div>
-            <div className="rounded-lg bg-slate-50 p-3">
-              <p className="text-xs uppercase tracking-wide text-slate-400">Worker claimed</p>
+            <div className="border border-line bg-background p-3">
+              <p className="text-xs uppercase tracking-wide text-foreground/40">Worker claimed</p>
               <dl className="mt-2 space-y-2">
                 <div>
-                  <dt className="text-xs text-slate-400">Dates</dt>
-                  <dd className={`font-mono ${datesMatch ? 'text-slate-800' : 'text-amber-700 line-through'}`}>
+                  <dt className="text-xs text-foreground/40">Dates</dt>
+                  <dd className={`font-mono ${datesMatch ? 'text-foreground/80' : 'text-caution line-through'}`}>
                     {monthEn(employment.startDate)} – {employment.endDate ? monthEn(employment.endDate) : 'Present'}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-slate-400">Hours / week</dt>
-                  <dd className={`font-mono ${hoursMatch ? 'text-slate-800' : 'text-amber-700 line-through'}`}>
+                  <dt className="text-xs text-foreground/40">Hours / week</dt>
+                  <dd className={`font-mono ${hoursMatch ? 'text-foreground/80' : 'text-caution line-through'}`}>
                     {employment.hoursPerWeek}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-slate-400">Role</dt>
-                  <dd className="text-slate-800">{employment.roleTitle}</dd>
+                  <dt className="text-xs text-foreground/40">Role</dt>
+                  <dd className="text-foreground/80">{employment.roleTitle}</dd>
                 </div>
               </dl>
             </div>
           </div>
 
-          <div className="mt-3 rounded-lg bg-emerald-50 p-3">
-            <p className="text-xs uppercase tracking-wide text-emerald-700">Verified hours</p>
-            <p className="font-mono text-2xl font-semibold text-emerald-800">{result.verifiedHours.toLocaleString('en-CA')}</p>
+          <div className="mt-3 border border-orange/40 bg-orange/[0.08] p-3">
+            <p className="text-xs uppercase tracking-wide text-orange">Verified hours</p>
+            <p className="font-mono text-2xl font-semibold text-orange">{result.verifiedHours.toLocaleString('en-CA')}</p>
           </div>
 
           {/* Duty chips */}
           <div className="mt-3">
-            <p className="mb-1.5 text-xs uppercase tracking-wide text-slate-400">Confirmed duties</p>
+            <p className="mb-1.5 text-xs uppercase tracking-wide text-foreground/40">Confirmed duties</p>
             <div className="flex flex-wrap gap-1.5">
               {result.confirmedDutyIds.map((id) => {
                 const label = dutyLabel(id);
@@ -228,10 +228,10 @@ export default function VerificationCard({ request, employment }: { request: Ver
                 return (
                   <span
                     key={id}
-                    className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-800"
+                    className="inline-flex items-center gap-1 border border-orange/40 bg-orange/10 px-2.5 py-1 text-xs font-medium text-orange"
                   >
                     {label.en}
-                    <span className="font-mono text-emerald-600">{label.code}</span>
+                    <span className="font-mono text-orange/70">{label.code}</span>
                   </span>
                 );
               })}
@@ -240,10 +240,10 @@ export default function VerificationCard({ request, employment }: { request: Ver
 
           {/* Compact 7-field checklist */}
           <div className="mt-3">
-            <p className="mb-1.5 text-xs uppercase tracking-wide text-slate-400">Confirmation checklist</p>
+            <p className="mb-1.5 text-xs uppercase tracking-wide text-foreground/40">Confirmation checklist</p>
             <div className="flex flex-wrap gap-3">
               {CONFIRM_FIELDS.map((field) => (
-                <span key={field} className="inline-flex items-center gap-1.5 text-xs text-slate-600">
+                <span key={field} className="inline-flex items-center gap-1.5 text-xs text-foreground/60">
                   <ChecklistRow confirmation={confirmationByField.get(field)} field={field} />
                   {FIELD_LABELS[field]}
                 </span>
@@ -253,9 +253,9 @@ export default function VerificationCard({ request, employment }: { request: Ver
 
           {/* Discrepancies */}
           {result.discrepancies.length > 0 && (
-            <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
-              <p className="text-xs uppercase tracking-wide text-amber-700">Discrepancies</p>
-              <ul className="mt-1.5 space-y-1 text-xs text-amber-800">
+            <div className="mt-3 border border-caution/40 bg-caution/10 p-3">
+              <p className="text-xs uppercase tracking-wide text-caution">Discrepancies</p>
+              <ul className="mt-1.5 space-y-1 text-xs text-caution">
                 {result.discrepancies.map((d, i) => (
                   <li key={i}>{d}</li>
                 ))}
@@ -266,30 +266,30 @@ export default function VerificationCard({ request, employment }: { request: Ver
       </div>
 
       {/* Collapsible transcript */}
-      <div className="border-t border-slate-100 pt-3">
+      <div className="border-t border-line pt-3">
         <button
           type="button"
           onClick={() => setTranscriptOpen((v) => !v)}
-          className="text-sm font-medium text-slate-700 hover:text-slate-900"
+          className="text-sm font-medium text-foreground/70 hover:text-orange"
         >
           {transcriptOpen ? '▾' : '▸'} Transcript
         </button>
-        {transcriptOpen && <div className="mt-2"><TranscriptView transcript={request.transcript} /></div>}
+        {transcriptOpen && <div className="animate-punch-in mt-2"><TranscriptView transcript={request.transcript} /></div>}
       </div>
 
       {/* Collapsible audit trail */}
-      <div className="border-t border-slate-100 pt-3">
+      <div className="border-t border-line pt-3">
         <button
           type="button"
           onClick={() => setAuditOpen((v) => !v)}
-          className="text-sm font-medium text-slate-700 hover:text-slate-900"
+          className="text-sm font-medium text-foreground/70 hover:text-orange"
         >
           {auditOpen ? '▾' : '▸'} Audit trail
         </button>
-        {auditOpen && <div className="mt-2"><AuditView request={request} /></div>}
+        {auditOpen && <div className="animate-punch-in mt-2"><AuditView request={request} /></div>}
       </div>
 
-      <div className="flex justify-end border-t border-slate-100 pt-3">
+      <div className="flex justify-end border-t border-line pt-3">
         <a href={`/api/employments/${employment.id}/wev-form`} target="_blank" rel="noopener noreferrer">
           <Button variant="secondary">Download employer letter draft (PDF)</Button>
         </a>
