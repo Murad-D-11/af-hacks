@@ -75,6 +75,12 @@ function toMonthString(month: string, year: string): string | null {
   return `${year}-${m}`;
 }
 
+// EN: Shared input styling — a hard-edged field on the dark plate surface with an
+// orange focus rail, matching the rest of the ledger's surface language.
+const INPUT_CLASS =
+  'w-full border border-line bg-background px-3 py-2 text-sm text-foreground placeholder:text-foreground/30 ' +
+  'transition-colors focus:border-orange focus:outline-none focus:ring-1 focus:ring-orange/40';
+
 export default function EmployerForm({
   request,
   employerName,
@@ -170,9 +176,9 @@ export default function EmployerForm({
   if (phase === 'review') {
     const answers = buildAnswers();
     return (
-      <Card>
-        <p className="text-xs uppercase tracking-wide text-slate-400">Adım 1 · Özet</p>
-        <h2 className="mt-1 font-serif text-xl font-semibold text-slate-900">Bilgilerinizi kontrol edin</h2>
+      <Card className="animate-stamp-in">
+        <p className="text-xs uppercase tracking-wide text-foreground/40">Adım 1 · Özet</p>
+        <h2 className="font-stamp mt-1 text-2xl font-bold uppercase tracking-wide text-foreground">Bilgilerinizi kontrol edin</h2>
         <dl className="mt-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
           <ReviewItem label="Şirket adı" value={form.companyName} />
           <ReviewItem label="Şehir / Ülke" value={`${form.city}, ${form.country}`} />
@@ -196,7 +202,7 @@ export default function EmployerForm({
         </dl>
 
         {errors.length > 0 && (
-          <ul className="mt-4 space-y-1 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+          <ul className="mt-4 space-y-1 border border-danger/40 bg-danger/10 p-3 text-sm text-danger">
             {errors.map((err, i) => (
               <li key={i}>{err}</li>
             ))}
@@ -216,29 +222,29 @@ export default function EmployerForm({
   }
 
   return (
-    <Card>
+    <Card className="animate-rise-in">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs uppercase tracking-wide text-slate-400">Adım 1 · Bilgiler</p>
-          <h2 className="mt-1 font-serif text-xl font-semibold text-slate-900">Çalışma bilgilerini girin</h2>
+          <p className="text-xs uppercase tracking-wide text-foreground/40">Adım 1 · Bilgiler</p>
+          <h2 className="font-stamp mt-1 text-2xl font-bold uppercase tracking-wide text-foreground">Çalışma bilgilerini girin</h2>
         </div>
         {isDemo && (
           <button
             type="button"
             onClick={() => setForm(demoFilled(form))}
-            className="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-400 hover:text-slate-600"
+            className="border border-line px-3 py-1 text-xs uppercase text-foreground/40 hover:border-orange/60 hover:text-orange"
           >
             Demo: doldur
           </button>
         )}
       </div>
-      <p className="mt-2 text-sm text-slate-500">
+      <p className="mt-2 text-sm text-foreground/50">
         {/* EN: You enter this information yourself. TradePass never fills in anything on your behalf. */}
         Bu bilgileri siz girersiniz. TradePass hiçbir bilgiyi sizin adınıza yazmaz.
       </p>
 
       {errors.length > 0 && (
-        <ul className="mt-4 space-y-1 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+        <ul className="mt-4 space-y-1 border border-danger/40 bg-danger/10 p-3 text-sm text-danger">
           {errors.map((err, i) => (
             <li key={i}>{err}</li>
           ))}
@@ -254,36 +260,36 @@ export default function EmployerForm({
       >
         <fieldset className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Şirket adı">
-            <input className="input" value={form.companyName} onChange={(e) => set('companyName', e.target.value)} required />
+            <input className={INPUT_CLASS} value={form.companyName} onChange={(e) => set('companyName', e.target.value)} required />
           </Field>
           <Field label="Şehir">
-            <input className="input" value={form.city} onChange={(e) => set('city', e.target.value)} required />
+            <input className={INPUT_CLASS} value={form.city} onChange={(e) => set('city', e.target.value)} required />
           </Field>
           <Field label="Ülke">
-            <input className="input" value={form.country} onChange={(e) => set('country', e.target.value)} required />
+            <input className={INPUT_CLASS} value={form.country} onChange={(e) => set('country', e.target.value)} required />
           </Field>
           <Field label="Çalışanın pozisyonu">
-            <input className="input" value={form.roleTitle} onChange={(e) => set('roleTitle', e.target.value)} required />
+            <input className={INPUT_CLASS} value={form.roleTitle} onChange={(e) => set('roleTitle', e.target.value)} required />
           </Field>
           <Field label="Adınız">
-            <input className="input" value={form.supervisorName} onChange={(e) => set('supervisorName', e.target.value)} required />
+            <input className={INPUT_CLASS} value={form.supervisorName} onChange={(e) => set('supervisorName', e.target.value)} required />
           </Field>
           <Field label="Ünvanınız">
-            <input className="input" value={form.supervisorTitle} onChange={(e) => set('supervisorTitle', e.target.value)} required />
+            <input className={INPUT_CLASS} value={form.supervisorTitle} onChange={(e) => set('supervisorTitle', e.target.value)} required />
           </Field>
         </fieldset>
 
         <fieldset className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Başlangıç">
             <div className="flex gap-2">
-              <select className="input" value={form.startMonth} onChange={(e) => set('startMonth', e.target.value)} required>
+              <select className={INPUT_CLASS} value={form.startMonth} onChange={(e) => set('startMonth', e.target.value)} required>
                 <option value="">Ay</option>
                 {monthOptions.map((m) => (
                   <option key={m.value} value={m.value}>{m.label}</option>
                 ))}
               </select>
               <input
-                className="input"
+                className={INPUT_CLASS}
                 placeholder="Yıl"
                 inputMode="numeric"
                 value={form.startYear}
@@ -294,14 +300,14 @@ export default function EmployerForm({
           </Field>
           <Field label="Bitiş">
             <div className="flex gap-2">
-              <select className="input" value={form.endMonth} onChange={(e) => set('endMonth', e.target.value)} required>
+              <select className={INPUT_CLASS} value={form.endMonth} onChange={(e) => set('endMonth', e.target.value)} required>
                 <option value="">Ay</option>
                 {monthOptions.map((m) => (
                   <option key={m.value} value={m.value}>{m.label}</option>
                 ))}
               </select>
               <input
-                className="input"
+                className={INPUT_CLASS}
                 placeholder="Yıl"
                 inputMode="numeric"
                 value={form.endYear}
@@ -314,7 +320,7 @@ export default function EmployerForm({
 
         <Field label="Haftalık çalışma saati">
           <input
-            className="input max-w-[10rem]"
+            className={`${INPUT_CLASS} max-w-[10rem]`}
             inputMode="numeric"
             value={form.hoursPerWeek}
             onChange={(e) => set('hoursPerWeek', e.target.value.replace(/\D/g, '').slice(0, 3))}
@@ -323,13 +329,16 @@ export default function EmployerForm({
         </Field>
 
         <fieldset>
-          <legend className="mb-2 text-sm font-medium text-slate-700">Görevler</legend>
+          <legend className="mb-2 text-sm font-medium text-foreground/70">Görevler</legend>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {DUTIES_309A.map((duty) => (
-              <label key={duty.id} className="flex items-start gap-2 rounded-lg border border-slate-200 p-3 text-sm hover:bg-slate-50">
+              <label
+                key={duty.id}
+                className="flex items-start gap-2 border border-line p-3 text-sm transition-colors hover:border-orange/50 hover:bg-orange/5"
+              >
                 <input
                   type="checkbox"
-                  className="mt-0.5"
+                  className="mt-0.5 accent-orange"
                   checked={form.dutyIds.includes(duty.id)}
                   onChange={() => toggleDuty(duty.id)}
                 />
@@ -341,32 +350,17 @@ export default function EmployerForm({
 
         <Field label="Ek notlar (isteğe bağlı)">
           <textarea
-            className="input min-h-[80px]"
+            className={`${INPUT_CLASS} min-h-[80px]`}
             value={form.dutyNotesTr}
             onChange={(e) => set('dutyNotesTr', e.target.value)}
           />
         </Field>
 
-        <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+        <div className="flex items-center justify-between border-t border-line pt-4">
           <Badge tone="blue">Adım 1 / 3</Badge>
           <Button type="submit">İncele ve gönder</Button>
         </div>
       </form>
-
-      <style jsx global>{`
-        .input {
-          width: 100%;
-          border: 1px solid rgb(203 213 225);
-          border-radius: 0.5rem;
-          padding: 0.5rem 0.75rem;
-          font-size: 0.875rem;
-          background: white;
-        }
-        .input:focus {
-          outline: 2px solid rgb(16 185 129);
-          outline-offset: 1px;
-        }
-      `}</style>
     </Card>
   );
 }
@@ -374,7 +368,7 @@ export default function EmployerForm({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-sm font-medium text-slate-700">{label}</span>
+      <span className="mb-1 block text-sm font-medium text-foreground/70">{label}</span>
       {children}
     </label>
   );
@@ -383,8 +377,8 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 function ReviewItem({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs uppercase tracking-wide text-slate-400">{label}</p>
-      <p className="text-sm text-slate-800">{value}</p>
+      <p className="text-xs uppercase tracking-wide text-foreground/40">{label}</p>
+      <p className="text-sm text-foreground/80">{value}</p>
     </div>
   );
 }

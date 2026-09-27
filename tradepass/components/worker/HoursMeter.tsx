@@ -8,38 +8,43 @@ export default function HoursMeter({ verifiedHours, claimedHours }: { verifiedHo
     <div>
       <div className="flex items-end justify-between">
         <div>
-          <p className="text-xs uppercase tracking-wide text-slate-400">Verified hours</p>
-          <p className="font-mono text-4xl font-semibold text-slate-900 sm:text-5xl">
+          <p className="text-xs uppercase tracking-wide text-foreground/40">Verified hours</p>
+          <p className="font-mono text-4xl font-semibold text-orange sm:text-5xl">
             {verifiedHours.toLocaleString('en-CA')}
-            <span className="text-lg font-normal text-slate-400"> / {REQUIRED_HOURS_309A.toLocaleString('en-CA')}</span>
+            <span className="text-lg font-normal text-foreground/40"> / {REQUIRED_HOURS_309A.toLocaleString('en-CA')}</span>
           </p>
         </div>
-        <p className="text-right text-xs text-slate-500">
-          Claimed: <span className="font-mono text-slate-700">{claimedHours.toLocaleString('en-CA')}</span>
+        <p className="text-right text-xs text-foreground/50">
+          Claimed: <span className="font-mono text-foreground/70">{claimedHours.toLocaleString('en-CA')}</span>
         </p>
       </div>
 
-      <div className="mt-4 h-4 w-full overflow-hidden rounded-full bg-slate-100">
+      {/* EN: A hard-edged gauge, not a rounded pill — the verified bar carries a
+          marching hazard-stripe texture (like caution tape), the claimed ghost
+          bar behind it is a flat dim fill. */}
+      <div className="mt-4 h-4 w-full border border-line bg-background">
         <div className="relative h-full w-full">
-          {/* Ghost bar: total claimed, behind the solid verified bar. */}
           <div
-            className="absolute inset-y-0 left-0 animate-bar-fill rounded-full bg-amber-200"
+            className="absolute inset-y-0 left-0 animate-bar-fill bg-caution/25"
             style={{ width: `${claimedPct}%` }}
           />
-          {/* Solid bar: verified hours, drawn on top. */}
           <div
-            className="absolute inset-y-0 left-0 animate-bar-fill rounded-full bg-emerald-600"
-            style={{ width: `${verifiedPct}%` }}
+            className="animate-march absolute inset-y-0 left-0 animate-bar-fill"
+            style={{
+              width: `${verifiedPct}%`,
+              backgroundImage:
+                'repeating-linear-gradient(135deg, var(--orange) 0px, var(--orange) 8px, var(--orange-dim) 8px, var(--orange-dim) 16px)',
+            }}
           />
         </div>
       </div>
 
-      <div className="mt-2 flex items-center gap-4 text-xs text-slate-500">
+      <div className="mt-2 flex items-center gap-4 text-xs text-foreground/50">
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full bg-emerald-600" /> Verified
+          <span className="h-2 w-2 bg-orange" /> Verified
         </span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full bg-amber-200" /> Claimed by worker
+          <span className="h-2 w-2 bg-caution/40" /> Claimed by worker
         </span>
       </div>
     </div>

@@ -69,8 +69,8 @@ export default function WorkerPage() {
   if (notFound) {
     return (
       <Card>
-        <p className="text-sm text-slate-600">Worker not found.</p>
-        <Link href="/" className="mt-3 inline-block text-sm font-medium text-emerald-700 hover:text-emerald-800">
+        <p className="text-sm text-foreground/60">Worker not found.</p>
+        <Link href="/" className="mt-3 inline-block text-sm font-semibold uppercase text-orange hover:text-[#ff7038]">
           ← Back to dashboard
         </Link>
       </Card>
@@ -80,7 +80,7 @@ export default function WorkerPage() {
   if (loading || !detail || !assessment) {
     return (
       <Card>
-        <p className="text-sm text-slate-500">Loading…</p>
+        <p className="text-sm text-foreground/50">Loading…</p>
       </Card>
     );
   }
@@ -89,17 +89,16 @@ export default function WorkerPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <Link href="/" className="text-xs font-medium text-slate-400 hover:text-slate-600">
+      <div className="animate-rise-in">
+        <Link href="/" className="text-xs font-semibold uppercase tracking-wide text-foreground/40 hover:text-orange">
           ← Dashboard
         </Link>
 
         <div className="mt-2 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="font-serif text-3xl font-semibold text-slate-900">{worker.name}</h1>
-            <p className="mt-1 text-sm text-slate-600">
-              309A Construction &amp; Maintenance Electrician · {worker.contractorName} · {worker.currentRole} ·{' '}
-              from {worker.homeCountry}
+            <h1 className="font-stamp text-4xl font-bold uppercase tracking-wide text-foreground">{worker.name}</h1>
+            <p className="mt-1 text-sm text-foreground/60">
+              {worker.contractorName} · {worker.currentRole} · from {worker.homeCountry}
             </p>
           </div>
 
@@ -110,7 +109,7 @@ export default function WorkerPage() {
             {!worker.intake && (
               <Link
                 href={`/workers/${worker.id}/intake`}
-                className="text-sm font-medium text-emerald-700 hover:text-emerald-800"
+                className="text-sm font-semibold uppercase text-orange hover:text-[#ff7038]"
               >
                 Record work history (voice) →
               </Link>
@@ -119,16 +118,16 @@ export default function WorkerPage() {
         </div>
       </div>
 
-      <IntakeSummary intake={worker.intake} />
+      <IntakeSummary intake={worker.intake} workerId={worker.id} />
 
-      <Card>
+      <Card className="animate-rise-in" style={{ animationDelay: '60ms' }}>
         <HoursMeter verifiedHours={assessment.verifiedHours} claimedHours={assessment.claimedHours} />
       </Card>
 
-      <Card>
+      <Card className="animate-rise-in" style={{ animationDelay: '120ms' }}>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-serif text-lg font-medium text-slate-900">309A skill-set coverage</h2>
-          <span className="font-mono text-sm text-slate-500">{assessment.verifiedCount}/{assessment.totalSkillSets}</span>
+          <h2 className="font-stamp text-lg font-bold uppercase tracking-wide text-foreground">Skill-set coverage</h2>
+          <span className="font-mono text-sm text-foreground/50">{assessment.verifiedCount}/{assessment.totalSkillSets}</span>
         </div>
         <SkillSetGrid coverage={assessment.coverage} />
       </Card>
@@ -140,7 +139,7 @@ export default function WorkerPage() {
       )}
 
       <div>
-        <h2 className="mb-3 font-serif text-lg font-medium text-slate-900">Employment history</h2>
+        <h2 className="mb-3 font-stamp text-lg font-bold uppercase tracking-wide text-foreground">Employment history</h2>
         <EmploymentList employments={employments} requests={requests} onRequestCreated={load} />
       </div>
 

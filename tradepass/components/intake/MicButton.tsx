@@ -7,16 +7,17 @@ export default function MicButton({ state, onStart, onEnd }: { state: MicState; 
     return (
       <div className="flex flex-col items-center gap-3">
         <div className="relative flex h-24 w-24 items-center justify-center">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-40" />
-          <span className="relative inline-flex h-20 w-20 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg">
+          <span className="absolute inline-flex h-full w-full animate-pulse-ring bg-orange/50" />
+          <span className="relative inline-flex h-20 w-20 items-center justify-center border-2 border-orange bg-plate text-orange shadow-plate">
             <MicIcon />
           </span>
         </div>
         <button
           onClick={onEnd}
-          className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+          className="border border-line bg-plate-raised px-4 py-2 text-sm font-semibold uppercase tracking-wide text-foreground transition hover:border-orange/60"
         >
-          End conversation
+          {/* EN: End conversation */}
+          Görüşmeyi sonlandır
         </button>
       </div>
     );
@@ -28,11 +29,12 @@ export default function MicButton({ state, onStart, onEnd }: { state: MicState; 
       disabled={state === 'requesting'}
       className="flex flex-col items-center gap-3 disabled:opacity-60"
     >
-      <span className="flex h-24 w-24 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg transition hover:bg-emerald-700">
+      <span className="flex h-24 w-24 items-center justify-center border-2 border-orange bg-orange text-plate shadow-plate transition hover:bg-[#ff7038]">
         <MicIcon />
       </span>
-      <span className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700">
-        {state === 'requesting' ? 'Connecting…' : 'Start speaking (Türkçe)'}
+      <span className="bg-orange px-4 py-2 text-sm font-semibold uppercase tracking-wide text-plate transition hover:bg-[#ff7038]">
+        {/* EN: Connecting… / Start speaking */}
+        {state === 'requesting' ? 'Bağlanılıyor…' : 'Konuşmaya başla'}
       </span>
     </button>
   );

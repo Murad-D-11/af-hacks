@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import Card from '@/components/ui/Card';
+import Button from '@/components/ui/Button';
 import StepIndicator from '@/components/employer/StepIndicator';
 import EmployerForm from '@/components/employer/EmployerForm';
 import InterviewStep from '@/components/employer/InterviewStep';
@@ -30,6 +31,13 @@ export default function VerifyPage() {
 
   const [state, setState] = useState<LoadState>({ status: 'loading' });
 
+  // Once completed, the employer can still choose to redo the video interview from
+  // this same link (e.g. they made a mistake and only noticed after closing the tab).
+  // This is a purely local choice — nothing server-side changes until they actually
+  // finish a new recording, at which point /interview/complete overwrites the
+  // previous result (that route already tolerates re-submission from 'completed').
+  const [redoRequested, setRedoRequested] = useState(false);
+
   const load = useCallback(async () => {
     setState({ status: 'loading' });
     try {
@@ -52,7 +60,7 @@ export default function VerifyPage() {
   if (state.status === 'loading') {
     return (
       <Card>
-        <p className="text-sm text-slate-500">Yükleniyor…</p>
+        <p className="text-sm text-foreground/50">Yükleniyor…</p>
       </Card>
     );
   }
@@ -72,16 +80,24 @@ export default function VerifyPage() {
     setState({ status: 'ready', data: { ...data, request: updated } });
   };
 
+  const showInterviewStep =
+    request.status === 'form_submitted' || request.status === 'interviewing' || (request.status === 'completed' && redoRequested);
+
   return (
-    <div className="space-y-6">
+    <div className="animate-rise-in space-y-6">
       <PageHeader workerName={worker.name} employerTimezone={reference.timezone} />
 
-      {request.status === 'completed' ? (
-        <ThankYouScreen employerName={employerName} />
-      ) : request.status === 'form_submitted' || request.status === 'interviewing' ? (
+      {request.status === 'completed' && !redoRequested ? (
+        <ThankYouScreen employerName={employerName} employmentId={request.employmentId} onRedo={() => setRedoRequested(true)} />
+      ) : showInterviewStep ? (
         <>
           <StepIndicator current="interview" />
-          <InterviewStep request={request} workerName={worker.name} onCompleted={updateRequest} />
+          <InterviewStep
+            request={request}
+            workerName={worker.name}
+            referenceLanguage={reference.language}
+            onCompleted={updateRequest}
+          />
         </>
       ) : (
         <>
@@ -102,13 +118,13 @@ export default function VerifyPage() {
 function PageHeader({ workerName, employerTimezone }: { workerName: string; employerTimezone: string }) {
   return (
     <Card>
-      <p className="text-xs uppercase tracking-wide text-slate-400">TradePass</p>
-      <h1 className="mt-1 font-serif text-2xl font-semibold text-slate-900">Çalışma Deneyimi Doğrulaması</h1>
-      <p className="mt-1 text-sm text-slate-600">
+      <p className="text-xs uppercase tracking-wide text-orange">TradePass</p>
+      <h1 className="font-stamp mt-1 text-3xl font-bold uppercase tracking-wide text-foreground">Çalışma Deneyimi Doğrulaması</h1>
+      <p className="mt-1 text-sm text-foreground/60">
         {/* EN: {workerName}, Ontario electrician license application. */}
         {workerName}, Ontario elektrikçi lisans başvurusu.
       </p>
-      <p className="mt-3 text-xs text-slate-400">
+      <p className="mt-3 text-xs text-foreground/40">
         {/* EN: Your local time: {time}. You can complete this whenever you like. */}
         Yerel saatiniz: {localTime(employerTimezone)} · İstediğiniz zaman tamamlayabilirsiniz.
       </p>
@@ -116,15 +132,36 @@ function PageHeader({ workerName, employerTimezone }: { workerName: string; empl
   );
 }
 
-function ThankYouScreen({ employerName }: { employerName: string }) {
+function ThankYouScreen({
+  employerName,
+  employmentId,
+  onRedo,
+}: {
+  employerName: string;
+  employmentId: string;
+  onRedo: () => void;
+}) {
   return (
-    <Card>
-      <p className="text-xs uppercase tracking-wide text-emerald-600">Tamamlandı</p>
-      <h2 className="mt-1 font-serif text-xl font-semibold text-slate-900">Teşekkür ederiz</h2>
-      <p className="mt-2 text-sm text-slate-600">
+    <Card className="animate-celebrate">
+      <p className="text-xs uppercase tracking-wide text-signal">Tamamlandı</p>
+      <h2 className="font-stamp mt-1 text-2xl font-bold uppercase tracking-wide text-foreground">Teşekkür ederiz</h2>
+      <p className="mt-2 text-sm text-foreground/60">
         {/* EN: Thank you, {employerName}. Your verification has been recorded and submitted. */}
         Teşekkür ederiz, {employerName}. Doğrulamanız kaydedildi ve gönderildi. Başka bir işlem yapmanıza gerek yok.
       </p>
+      <div className="mt-4">
+        <a href={`/api/employments/${employmentId}/wev-form`} target="_blank" rel="noopener noreferrer">
+          {/* EN: Download the employer letter draft (PDF) */}
+          <Button>Doğrulama belgesini indir (PDF)</Button>
+        </a>
+      </div>
+      <button
+        onClick={onRedo}
+        className="mt-4 text-xs font-medium text-foreground/50 hover:text-foreground/80"
+      >
+        {/* EN: Made a mistake? Redo the video verification. */}
+        Bir hata mı yaptınız? Görüntülü doğrulamayı tekrar yapın.
+      </button>
     </Card>
   );
 }

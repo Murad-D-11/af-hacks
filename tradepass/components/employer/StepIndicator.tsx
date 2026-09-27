@@ -18,17 +18,17 @@ export default function StepIndicator({ current }: { current: StepKey }) {
           <li key={step.key} className="flex items-center gap-2">
             <span
               className={
-                'rounded-full px-2.5 py-1 ' +
+                'border px-2.5 py-1 transition-colors duration-200 ' +
                 (active
-                  ? 'bg-emerald-600 text-white'
+                  ? 'border-orange bg-orange text-plate'
                   : done
-                    ? 'bg-emerald-100 text-emerald-800'
-                    : 'bg-slate-100 text-slate-400')
+                    ? 'border-orange/40 bg-orange/10 text-orange'
+                    : 'border-line bg-transparent text-foreground/35')
               }
             >
               {step.label}
             </span>
-            {i < STEPS.length - 1 && <span className="text-slate-300">→</span>}
+            {i < STEPS.length - 1 && <span className="text-foreground/30">→</span>}
           </li>
         );
       })}

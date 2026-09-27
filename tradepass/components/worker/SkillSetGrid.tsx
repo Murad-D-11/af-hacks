@@ -4,9 +4,9 @@ import { useState } from 'react';
 import type { SkillSetCoverage } from '@/lib/types';
 
 const STATUS_STYLES: Record<SkillSetCoverage['status'], { tile: string; label: string; icon: string }> = {
-  verified: { tile: 'border-emerald-300 bg-emerald-50', label: 'Verified', icon: '✓' },
-  claimed: { tile: 'border-amber-300 bg-amber-50', label: "Worker's claim only", icon: '~' },
-  gap: { tile: 'border-slate-200 bg-slate-50', label: 'Gap', icon: '·' },
+  verified: { tile: 'border-orange/50 bg-orange/[0.07]', label: 'Verified', icon: '✓' },
+  claimed: { tile: 'border-caution/40 bg-caution/10', label: "Worker's claim only", icon: '~' },
+  gap: { tile: 'border-line bg-background', label: 'Gap', icon: '·' },
 };
 
 export default function SkillSetGrid({ coverage }: { coverage: SkillSetCoverage[] }) {
@@ -21,35 +21,39 @@ export default function SkillSetGrid({ coverage }: { coverage: SkillSetCoverage[
           <button
             key={c.skillSetId}
             onClick={() => setExpandedId(isExpanded ? null : c.skillSetId)}
-            style={{ animationDelay: `${i * 60}ms` }}
-            className={`animate-tile-pop rounded-xl border p-3 text-left transition hover:shadow-sm ${style.tile}`}
+            style={{ animationDelay: `${i * 55}ms` }}
+            className={`animate-tile-pop border p-3 text-left transition hover:border-orange/70 ${style.tile}`}
           >
             <div className="flex items-center justify-between">
-              <span className="font-mono text-xs font-semibold text-slate-500">{c.code}</span>
+              <span className="font-mono text-xs font-semibold text-foreground/50">{c.code}</span>
               <span
-                className={`flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold ${
-                  c.status === 'verified' ? 'bg-emerald-600 text-white' : c.status === 'claimed' ? 'bg-amber-400 text-white' : 'bg-slate-300 text-slate-600'
+                className={`flex h-5 w-5 items-center justify-center text-xs font-bold ${
+                  c.status === 'verified'
+                    ? 'bg-orange text-plate'
+                    : c.status === 'claimed'
+                      ? 'bg-caution text-plate'
+                      : 'bg-foreground/10 text-foreground/50'
                 }`}
               >
                 {style.icon}
               </span>
             </div>
-            <p className="mt-1.5 text-xs font-medium leading-tight text-slate-800">{c.title}</p>
+            <p className="mt-1.5 text-xs font-medium leading-tight text-foreground/85">{c.title}</p>
             <div className="mt-1.5 flex items-center gap-1.5">
-              <span className="text-[10px] uppercase tracking-wide text-slate-500">{style.label}</span>
+              <span className="text-[10px] uppercase tracking-wide text-foreground/50">{style.label}</span>
               {c.provisional && (
-                <span className="rounded bg-slate-200 px-1 py-0.5 text-[9px] font-medium uppercase text-slate-600">Provisional</span>
+                <span className="bg-foreground/10 px-1 py-0.5 text-[9px] font-medium uppercase text-foreground/60">Provisional</span>
               )}
             </div>
 
             {isExpanded && (
-              <div className="mt-2 space-y-1 border-t border-slate-200 pt-2">
+              <div className="mt-2 space-y-1 border-t border-line pt-2">
                 {c.evidence.length === 0 ? (
-                  <p className="text-[11px] text-slate-400">No evidence yet.</p>
+                  <p className="text-[11px] text-foreground/40">No evidence yet.</p>
                 ) : (
                   c.evidence.map((e, idx) => (
-                    <p key={idx} className="text-[11px] text-slate-600">
-                      <span className={e.source === 'verified' ? 'text-emerald-700' : 'text-amber-700'}>
+                    <p key={idx} className="text-[11px] text-foreground/60">
+                      <span className={e.source === 'verified' ? 'text-orange' : 'text-caution'}>
                         {e.source === 'verified' ? 'Verified: ' : 'Claimed: '}
                       </span>
                       {e.text}

@@ -64,57 +64,57 @@ export default function RequestVerificationModal({
   const employerTime = localTime(employment.reference.timezone);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
-      <Card className="w-full max-w-lg">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4">
+      <Card className="animate-stamp-in w-full max-w-lg">
         <div className="flex items-start justify-between">
-          <h2 className="font-serif text-xl font-semibold text-slate-900">Request verification</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600" aria-label="Close">
+          <h2 className="font-stamp text-2xl font-bold uppercase tracking-wide text-foreground">Request verification</h2>
+          <button onClick={onClose} className="text-foreground/40 hover:text-orange" aria-label="Close">
             ✕
           </button>
         </div>
 
-        <p className="mt-2 text-sm text-slate-600">
-          For <span className="font-medium text-slate-900">{employment.employerName}</span> ({employment.reference.name || 'no reference on file'})
+        <p className="mt-2 text-sm text-foreground/60">
+          For <span className="font-medium text-foreground">{employment.employerName}</span> ({employment.reference.name || 'no reference on file'})
         </p>
 
         {state === 'loading' && (
-          <p className="mt-6 text-sm text-slate-500">Creating a verification link…</p>
+          <p className="mt-6 text-sm text-foreground/50">Creating a verification link…</p>
         )}
 
         {state === 'error' && (
-          <p className="mt-6 text-sm text-red-600">Couldn&apos;t create the verification link. Please try again.</p>
+          <p className="mt-6 text-sm text-danger">Couldn&apos;t create the verification link. Please try again.</p>
         )}
 
         {state === 'ready' && result && (
           <div className="mt-6 space-y-4">
             <div>
-              <label className="text-xs uppercase tracking-wide text-slate-400">Verification link</label>
+              <label className="text-xs uppercase tracking-wide text-foreground/40">Verification link</label>
               <div className="mt-1 flex items-center gap-2">
                 <input
                   readOnly
                   value={result.url}
-                  className="flex-1 rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 font-mono text-xs text-slate-700"
+                  className="flex-1 border border-line bg-background px-3 py-2 font-mono text-xs text-foreground/75"
                   onFocus={(e) => e.currentTarget.select()}
                 />
                 <Button variant="secondary" onClick={handleCopy}>{copied ? 'Copied' : 'Copy link'}</Button>
               </div>
             </div>
 
-            <div className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500">
+            <div className="flex items-center justify-between border border-line bg-background px-3 py-2 text-xs text-foreground/50">
               <span>
-                Employer local time ({employment.reference.timezone}): <span className="font-mono text-slate-700">{employerTime}</span>
+                Employer local time ({employment.reference.timezone}): <span className="font-mono text-foreground/70">{employerTime}</span>
               </span>
               <a
                 href={result.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-medium text-emerald-700 hover:text-emerald-800"
+                className="font-semibold uppercase text-orange hover:text-[#ff7038]"
               >
                 Open employer page →
               </a>
             </div>
 
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-foreground/50">
               Send this link to the former employer. They enter the facts themselves and confirm them on video;
               TradePass never writes them on their behalf.
             </p>

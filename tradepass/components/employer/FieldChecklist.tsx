@@ -59,34 +59,34 @@ export default function FieldChecklist({
 
         const dot =
           tone === 'pending'
-            ? 'bg-slate-300'
+            ? 'bg-foreground/25'
             : tone === 'confirmed'
-              ? 'bg-emerald-500'
+              ? 'bg-orange'
               : tone === 'corrected'
-                ? 'bg-amber-500'
-                : 'bg-slate-400';
+                ? 'bg-caution'
+                : 'bg-foreground/30';
 
         const rowClass =
           tone === 'pending'
-            ? 'border-slate-200 bg-white'
+            ? 'border-line bg-plate'
             : tone === 'confirmed'
-              ? 'border-emerald-200 bg-emerald-50'
+              ? 'border-orange/40 bg-orange/[0.08]'
               : tone === 'corrected'
-                ? 'border-amber-200 bg-amber-50'
-                : 'border-slate-200 bg-slate-50';
+                ? 'border-caution/40 bg-caution/10'
+                : 'border-line bg-background';
 
         return (
           <li
             key={field}
-            className={`animate-slide-in-up rounded-lg border p-3 transition-colors ${rowClass}`}
+            className={`animate-slide-in-up border p-3 transition-colors ${rowClass}`}
           >
             <div className="flex items-center gap-2">
-              <span className={`h-2.5 w-2.5 flex-shrink-0 rounded-full ${dot} ${tone === 'pending' ? 'animate-pulse-ring' : ''}`} />
-              <span className="text-sm font-medium text-slate-800">{FIELD_LABELS_TR[field]}</span>
+              <span className={`h-2.5 w-2.5 flex-shrink-0 ${dot} ${tone === 'pending' ? 'animate-pulse-ring' : ''}`} />
+              <span className="text-sm font-medium text-foreground/85">{FIELD_LABELS_TR[field]}</span>
             </div>
-            <p className="mt-1 pl-[18px] text-xs text-slate-500">{fieldValuePreview(field, answers)}</p>
+            <p className="mt-1 pl-[18px] text-xs text-foreground/50">{fieldValuePreview(field, answers)}</p>
             {confirmation?.note && (
-              <p className="mt-1 pl-[18px] text-xs italic text-amber-700">{confirmation.note}</p>
+              <p className="mt-1 pl-[18px] text-xs italic text-caution">{confirmation.note}</p>
             )}
           </li>
         );

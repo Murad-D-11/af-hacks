@@ -11,7 +11,7 @@ export default function TranscriptBubbles({ lines }: { lines: TranscriptLine[] }
   }, [lines.length]);
 
   if (lines.length === 0) {
-    return <p className="text-sm text-slate-400">Görüşme başladığında konuşma metni burada görünecek.</p>;
+    return <p className="text-sm text-foreground/40">Görüşme başladığında konuşma metni burada görünecek.</p>;
   }
 
   return (
@@ -22,13 +22,13 @@ export default function TranscriptBubbles({ lines }: { lines: TranscriptLine[] }
           <div key={i} className={`flex ${isAgent ? 'justify-start' : 'justify-end'} animate-slide-in-up`}>
             <div
               className={
-                'max-w-[80%] rounded-2xl px-3 py-2 text-sm ' +
-                (isAgent ? 'bg-slate-100 text-slate-800' : 'bg-emerald-600 text-white')
+                'max-w-[80%] border px-3 py-2 text-sm ' +
+                (isAgent ? 'border-line bg-plate-raised text-foreground/85' : 'border-orange bg-orange text-plate')
               }
             >
               <p>{line.original}</p>
               {line.english && (
-                <p className={`mt-0.5 text-xs ${isAgent ? 'text-slate-500' : 'text-emerald-100'}`}>{line.english}</p>
+                <p className={`mt-0.5 text-xs ${isAgent ? 'text-foreground/45' : 'text-plate/70'}`}>{line.english}</p>
               )}
             </div>
           </div>
